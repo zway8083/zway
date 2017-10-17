@@ -61,7 +61,7 @@ for (id in zway_ids) {
       var req = {
          url: server_url + "/appiot/keys",
          method: "POST",
-         headers: { "content-type": "application/json" },
+         headers: { "Content-Type": "application/json" },
          data: JSON.stringify(body_serial)
       };
 
@@ -131,7 +131,7 @@ function compareSerial(s1, s2) {
 
 function saveMeasure(type, value, id, time, serial) {
    try {
-      console.log("Saving measure:", message, '=', value);
+      console.log("Saving measure:", type, '=', value);
       // Local save
       var ret1 = system('python /opt/z-way-server/automation/savemeasure.py', type, value, time);
       // Appiot
@@ -139,18 +139,19 @@ function saveMeasure(type, value, id, time, serial) {
       // Server
       var req = {
          url: server_url + "/event",
-         method: "post",
-         headers: { "content-type": "application/json" },
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
          data: JSON.stringify({ serial: serial, type: type, date: time, value: value })
       };
       var res = http.request(req);
-      console.log(JSON.stringify(JSON.parse(res.data)));
       if (ret1 > 0)
          console.log("savemeasure.py error code:", ret1);
       if (ret2 > 0)
          console.log("appiot.py error code:", ret2);
+      if (res.status != 201)
+         console.log("Http request failed: code", res.status, res.statusText);
    } catch (err) {
-      console.log("Failed to execute script system call:", err);
+      console.log("saveMeasure call error:", err);
    }
 }
 
