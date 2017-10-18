@@ -1,5 +1,5 @@
 /*** Sensor bindings ***/
-//test
+
 var server_url = "http://104.155.23.201";
 
 var zway_ids = zway.devices;
@@ -20,6 +20,7 @@ var devices = conf.devices;
 
 var change = false;
 var serial_found = false;
+var appiot_ref = false;
 var used = [];
 
 for (id in zway_ids) {
@@ -32,6 +33,7 @@ for (id in zway_ids) {
       continue;
 
    serial_found = false;
+   appiot_ref = false;
 
    var serial = zway_ids[id].instances[0].ManufacturerSpecific.data.serialNumber.value;
    console.log("cur serial =", serial);
@@ -46,14 +48,17 @@ for (id in zway_ids) {
             if (!devices[idx].id || devices[idx].id != id) {
                devices[idx].id = id;
                change = true;
-            } else
-               console.log("No need to update afg-conf.json");
+            }
+            if (devices[idx].battery == null || devices[idx].counter == null || devices[idx].luminescence == null
+                  || devices[idx].motion == null || devices[idx].temperature == null) {
+               appiot_ref = true;
+            }
             used.push(devices[idx].id);
             break;
          }
       }
    }
-   if (serial_found == false) {
+   if (serial_found == false || appiot_ref == true) {
       // No corresponding device found: load it from the server
       body_serial = { serial: null };
       body_serial.serial = serial;
@@ -66,13 +71,24 @@ for (id in zway_ids) {
       };
 
       var res = http.request(req);
+      var new_device = null;
+
       if (res.status != 200) {
          console.log("Http request failed: code", res.status, res.statusText + ":", res.data);
+         console.log("No appiot keys added");
+         if (appiot_ref == false) {
+            new_device = { battery: null, counter: null, id: id, luminescence: null,
+               motion: null, serial: serial, temperature: null };
+         } else {
+            used.push(id);
+         }
       } else {
          var keys = JSON.parse(res.data);
-         var new_device = { battery: keys.battery, counter: keys.peopleCount, id: id,
+         new_device = { battery: keys.battery, counter: keys.peopleCount, id: id,
             luminescence: keys.luminescence, motion: keys.motion, serial: serial,
             temperature: keys.temperature };
+      }
+      if (new_device != null) {
          console.log("New device added: id =", new_device.id);
          devices.push(new_device);
          used.push(new_device.id);
@@ -129,24 +145,32 @@ function compareSerial(s1, s2) {
    return true;
 }
 
-function saveMeasure(type, value, id, time, serial) {
+function saveMeasure(type, value, appiotKey, time, serial) {
    try {
       console.log("Saving measure:", type, '=', value);
       // Local save
       var ret1 = system('python /opt/z-way-server/automation/savemeasure.py', type, value, time);
       // Appiot
-      var ret2 = system('python /opt/z-way-server/automation/afg-appiot.py', id, value, time);
+      var ret2 = null;
+      if (appiotKey != null)
+         ret2 = system('python /opt/z-way-server/automation/afg-appiot.py', appiotKey, value, time);
       // Server
+      var dValue = null;
+      var binValue = null;
+      if (type === "motion")
+         binValue = value > 0;
+      else
+         dValue = value;
       var req = {
          url: server_url + "/event",
          method: "POST",
          headers: { "Content-Type": "application/json" },
-         data: JSON.stringify({ serial: serial, type: type, date: time, value: value })
+         data: JSON.stringify({ serial: serial, type: type, date: time, dValue: dValue, binValue: binValue })
       };
       var res = http.request(req);
       if (ret1 > 0)
          console.log("savemeasure.py error code:", ret1);
-      if (ret2 > 0)
+      if (ret2 != null && ret2 > 0)
          console.log("appiot.py error code:", ret2);
       if (res.status != 201)
          console.log("Http request failed: code", res.status, res.statusText);
