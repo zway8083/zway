@@ -52,14 +52,16 @@ for (id in zway_ids) {
             if (devices[idx].battery == null || devices[idx].counter == null || devices[idx].luminescence == null
                   || devices[idx].motion == null || devices[idx].temperature == null) {
                appiot_ref = true;
-            }
-            used.push(devices[idx].id);
+               devices[idx].id = -1;
+            } else
+               used.push(devices[idx].id);
             break;
          }
       }
    }
    if (serial_found == false || appiot_ref == true) {
       // No corresponding device found: load it from the server
+      // or appiot kes needed
       body_serial = { serial: null };
       body_serial.serial = serial;
 
@@ -76,24 +78,18 @@ for (id in zway_ids) {
       if (res.status != 200) {
          console.log("Http request failed: code", res.status, res.statusText + ":", res.data);
          console.log("No appiot keys added");
-         if (appiot_ref == false) {
-            new_device = { battery: null, counter: null, id: id, luminescence: null,
-               motion: null, serial: serial, temperature: null };
-         } else {
-            used.push(id);
-         }
+         new_device = { battery: null, counter: null, id: id, luminescence: null,
+            motion: null, serial: serial, temperature: null };
       } else {
          var keys = JSON.parse(res.data);
          new_device = { battery: keys.battery, counter: keys.peopleCount, id: id,
             luminescence: keys.luminescence, motion: keys.motion, serial: serial,
             temperature: keys.temperature };
       }
-      if (new_device != null) {
-         console.log("New device added: id =", new_device.id);
-         devices.push(new_device);
-         used.push(new_device.id);
-         change = true;
-      }
+      console.log("New device added: id =", new_device.id);
+      devices.push(new_device);
+      used.push(new_device.id);
+      change = true;
    }
 }
 
