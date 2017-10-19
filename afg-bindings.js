@@ -61,7 +61,7 @@ for (id in zway_ids) {
    }
    if (serial_found == false || appiot_ref == true) {
       // No corresponding device found: load it from the server
-      // or appiot kes needed
+      // or appiot keys needed
       body_serial = { serial: null };
       body_serial.serial = serial;
 
@@ -78,11 +78,11 @@ for (id in zway_ids) {
       if (res.status != 200) {
          console.log("Http request failed: code", res.status, res.statusText + ":", res.data);
          console.log("No appiot keys added");
-         new_device = { battery: null, counter: null, id: id, luminescence: null,
+         new_device = { battery: null, tamper: null, id: id, luminescence: null,
             motion: null, serial: serial, temperature: null };
       } else {
          var keys = JSON.parse(res.data);
-         new_device = { battery: keys.battery, counter: keys.peopleCount, id: id,
+         new_device = { battery: keys.battery, tamper: keys.tamper, id: id,
             luminescence: keys.luminescence, motion: keys.motion, serial: serial,
             temperature: keys.temperature };
       }
@@ -163,6 +163,7 @@ function saveMeasure(type, value, appiotKey, time, serial) {
          headers: { "Content-Type": "application/json" },
          data: JSON.stringify({ serial: serial, type: type, date: time, dValue: dValue, binValue: binValue })
       };
+      console.log("TIME =", time);
       var res = http.request(req);
       if (ret1 > 0)
          console.log("savemeasure.py error code:", ret1);
