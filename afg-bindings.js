@@ -153,7 +153,7 @@ function saveMeasure(type, value, appiotKey, time, serial) {
       // Server
       var dValue = null;
       var binValue = null;
-      if (type === "motion")
+      if (type === "motion" || type === "tamper")
          binValue = value > 0;
       else
          dValue = value;
@@ -163,7 +163,6 @@ function saveMeasure(type, value, appiotKey, time, serial) {
          headers: { "Content-Type": "application/json" },
          data: JSON.stringify({ serial: serial, type: type, date: time, dValue: dValue, binValue: binValue })
       };
-      console.log("TIME =", time);
       var res = http.request(req);
       if (ret1 > 0)
          console.log("savemeasure.py error code:", ret1);
@@ -192,9 +191,15 @@ for (idx in devices) {
          if (eventParam.value.length > 0 && eventParam.value[0] == 8)
             // PIR = OFF
             saveMeasure('motion', 0, device.motion, eventParam.updateTime, device.serial);
+         else if (eventParam.value.length > 0 && eventParam.value[0] == 3)
+            // TAMPER = OFF
+            saveMeasure('tamper', 0, device.tamper, eventParam.updateTime, device.serial);
       } else if (event.value == 8)
          // PIR = ON
          saveMeasure('motion', 1, device.motion, event.updateTime, device.serial);
+      else if (event.value == 3)
+         // TAMPER = ON
+         saveMeasure('tamper', 1, device.tamper, event.updateTime, device.serial);
    });
 
    zway.devices[device.id].instances[0].commandClasses[49].data[3].val.bind(function() {
