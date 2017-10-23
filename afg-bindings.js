@@ -1,6 +1,6 @@
 /*** Sensor bindings ***/
 
-var server_url = "http://35.195.37.200";
+var server_url = "http://35.187.36.227";
 
 var zway_ids = zway.devices;
 var conf = null;
