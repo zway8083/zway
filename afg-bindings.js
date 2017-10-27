@@ -186,7 +186,7 @@ for (idx in devices) {
 
    zway.devices[device.id].instances[0].Alarm.data[7].event.bind(function() {
       var event = zway.devices[device.id].instances[0].Alarm.data[7].event;
-      if (event.value == 0) {
+      /* if (event.value == 0) {
          var eventParam = zway.devices[device.id].instances[0].Alarm.data[7].eventParameters;
          if (eventParam.value.length > 0 && eventParam.value[0] == 8)
             // PIR = OFF
@@ -194,7 +194,8 @@ for (idx in devices) {
          else if (eventParam.value.length > 0 && eventParam.value[0] == 3)
             // TAMPER = OFF
             saveMeasure('tamper', 0, device.tamper, eventParam.updateTime, device.serial);
-      } else if (event.value == 8)
+      } else */
+      if (event.value == 8)
          // PIR = ON
          saveMeasure('motion', 1, device.motion, event.updateTime, device.serial);
       else if (event.value == 3)
