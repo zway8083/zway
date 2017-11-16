@@ -218,4 +218,4 @@ for (idx in devices) {
    });
 }
 
-console.log(afg-bindings.js loaded");
+console.log("afg-bindings.js loaded");
