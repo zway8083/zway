@@ -66,7 +66,7 @@ for (id in zway_ids) {
       body_serial.serial = serial;
 
       var req = {
-         url: server_url + "/appiot/keys",
+         url: server_url + "/api/appiot/keys",
          method: "POST",
          headers: { "Content-Type": "application/json" },
          data: JSON.stringify(body_serial)
@@ -108,7 +108,6 @@ for (idx in devices) {
       change = true;
    }
 }
-
 
 // Save changes in the afg-conf.json file
 if (change) {
@@ -158,7 +157,7 @@ function saveMeasure(type, value, appiotKey, time, serial) {
       else
          dValue = value;
       var req = {
-         url: server_url + "/event",
+         url: server_url + "/api/event",
          method: "POST",
          headers: { "Content-Type": "application/json" },
          data: JSON.stringify({ serial: serial, type: type, date: time, dValue: dValue, binValue: binValue })
@@ -219,4 +218,4 @@ for (idx in devices) {
    });
 }
 
-console.log("AfgConfig.js loaded");
+console.log(afg-bindings.js loaded");
