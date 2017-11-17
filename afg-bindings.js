@@ -1,6 +1,6 @@
 /*** Sensor bindings ***/
 
-system('sudo ./opt/z-way-server/automation/script.sh');
+system('sudo /opt/z-way-server/automation/script.sh');
 
 var server_url = "http://35.187.36.227";
 
